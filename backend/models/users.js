@@ -1,10 +1,6 @@
 
 const mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost:27017/smart-movie-recommendation-system')
-.then(() => {console.log('Connected to MongoDB');})
-.catch((err) => {console.error('Error connecting to MongoDB', err);});
-
 const userLoginSchema = mongoose.Schema({
     name : {type: String, required: true, trim: true, match: /^[a-zA-Z\s]+$/},
     username : {type: String, unique: true, required: true, trim: true, match: /^[a-zA-Z\s]+$/},
