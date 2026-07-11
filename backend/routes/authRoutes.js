@@ -1,18 +1,22 @@
 
+const express = require("express");
+const router = express.Router();
+const authControllers = require("../controllers/authControllers");
 
+router.post("/register", authControllers.register);
 
-router.post("/register", register);
+router.post("/send-otp", authControllers.sendOtp);
 
-router.post("/send-otp", sendOtp);
+router.post("/verify-otp", authControllers.verifyOtp);
 
-router.post("/verify-otp", verifyOtp);
+router.post("/signin", authControllers.signIn);
 
-router.post("/signin", signIn);
+router.post("/forgot-password", authControllers.forgotPassword);
 
-router.post("/forgot-password", forgotPassword);
+router.post("/verify-reset-otp", authControllers.verifyResetOtp);
 
-router.post("/verify-reset-otp", verifyResetOtp);
+router.post("/reset-password", authControllers.resetPassword);
 
-router.post("/reset-password", resetPassword);
+router.get('/search/:username', authControllers.findUsers);
 
-router.get('/search/:username', findUsers);
+module.exports = router;

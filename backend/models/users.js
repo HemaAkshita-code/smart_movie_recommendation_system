@@ -1,6 +1,8 @@
 
 const mongoose = require('mongoose');
 
+mongoose.connect('mongodb://localhost:27017/smart_movie_recommendation_system');
+
 const userLoginSchema = mongoose.Schema({
     name : {type: String, required: true, trim: true, match: /^[a-zA-Z\s]+$/},
     username : {type: String, unique: true, required: true, trim: true, match: /^[a-zA-Z0-9_]{4,20}$/},

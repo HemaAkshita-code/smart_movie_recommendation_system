@@ -10,6 +10,7 @@ var mongoose = require('mongoose');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var moviesRouter = require('./routes/movies');
+const authRoutes = require("./routes/authRoutes");
 
 var app = express();
 
@@ -25,12 +26,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use("/auth", authRoutes);
 app.use('/api/movies', moviesRouter);
 
 // MongoDB connection
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
+// mongoose.connect(process.env.MONGO_URI)
+//   .then(() => console.log('MongoDB connected'))
+//   .catch(err => console.error('MongoDB connection error:', err));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
