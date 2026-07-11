@@ -5,104 +5,86 @@ const authServices = require('../services/authServices');
 
 async function register(req, res, next) {
 
-  const existingUser = await userLoginModel.findOne({ username: req.body.username, email: req.body.email, name: req.body.name});
-  if(existingUser)
-  {
-    if(await bcrypt.compare(req.body.password, existingUser.password))
+    try 
     {
-      if(!existingUser.isVerified)
-      {
-        res.cookie("pendingUserId", existingUser._id.toString(), {
-          httpOnly: true,
-          maxAge: 10 * 60 * 1000
+
+        const result = await authServices.validateUserCredentials(req.body.username, req.body.email, req.body.name, req.body.password);
+
+        if (result.status === "UNVERIFIED_USER") 
+        {
+            res.cookie("pendingUserId", result.user._id.toString(), {
+                httpOnly: true,
+                maxAge: 10 * 60 * 1000
+            });
+
+            return res.status(400).json({
+                error: "This account is already registered but not verified. Please check your email for the OTP."
+            });
+        }
+
+        const registeredUser = await authServices.createUser(
+        req.body.name,
+        req.body.username,
+        req.body.email,
+        req.body.password
+        );
+
+        res.cookie("pendingUserId", registeredUser._id.toString(), {
+        httpOnly: true,
+        maxAge: 10 * 60 * 1000
         });
+
         // res.redirect('/verify-otp');
-        return res.status(400).json({ error: 'This account is already registered but not verified. Please check your email for the OTP.' });
-      }
-      else
-      {
-        return res.status(400).json({ error: 'Account already exists, please sign in.' });
-      }
+        res.json({ message: 'User registered successfully. Please check your email for the OTP.' });
     }
-    else if(!existingUser.isVerified)
+    catch(err) 
     {
-      return res.status(400).json({ error: 'Incorrect password or an account already exists with this username and email, please verify your account.' });
+        res.status(400).json({ error: err.message });
     }
-    else
-    {
-      return res.status(400).json({ error: 'Incorrect password or an account already exists with this username and email, please sign in.' });
-    }
-  }
-  else if(!req.body.name.trim() || !req.body.username.trim() || !req.body.email.trim() || !req.body.password.trim())
-  {
-    return res.status(400).json({ error: 'All fields are required' });
-  }
-  else if((!/^[a-zA-Z\s]+$/.test(req.body.name)))
-  {
-    return res.status(400).json({ error: 'Name can only contain letters and spaces' });
-  }
-  else if(!/^[a-zA-Z0-9_]{4,20}$/.test(req.body.username))
-  {
-    return res.status(400).json({ error: 'Username must be 4-20 characters long and can only contain letters, numbers, and underscores' });
-  }
-  else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(req.body.email))
-  {
-    return res.status(400).json({ error: 'Invalid email format' });
-  }
-  else if(!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(req.body.password))
-  {
-    return res.status(400).json({ error: 'Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character' });
-  }
-  else if(await userLoginModel.findOne({ username: req.body.username })) 
-  {
-    return res.status(400).json({ error: 'This Username already exists' });
-  }
-  else if(await userLoginModel.findOne({ email: req.body.email })) 
-  {
-    return res.status(400).json({ error: 'An account with this email already exists!' });
-  }
-  else
-  {
-    const registeredUser = await authServices.createUser(
-      req.body.name,
-      req.body.username,
-      req.body.email,
-      req.body.password
-    );
-
-    res.cookie("pendingUserId", registeredUser._id.toString(), {
-      httpOnly: true,
-      maxAge: 10 * 60 * 1000
-    });
-
-    // res.redirect('/verify-otp');
-    res.json({ message: 'User registered successfully. Please check your email for the OTP.' });
-  }
 
 }
 
 async function sendOtp(req, res, next) 
 { // for initial registration and for resend otp
-  const user = await getUserFromCookie("pendingUserId", req);
+  const user = await authServices.getUserFromCookie("pendingUserId", req);
 
   if(!user)
   {
     return res.status(400).json({ error: 'User not found' });
   }
 
-  await authServices.sendVerificationOtp(user);
+  try
+  {
+    await authServices.sendVerificationOtp(user);
+  }
+  catch(err)
+  {
+    return res.status(400).json({ error: err.message });
+  }
+  
   res.json({ message: 'OTP sent successfully' });
 //res.redirect('/verify-otp');
 }
 
 async function findUsers(req, res, next) 
 {
-  const foundUser = await authServices.findUserByUsername(req.params.username);
-  res.json(foundUser);
+  try
+  {
+    const foundUsers = await authServices.findUser('username', req.params.username);
+    if(!foundUsers)
+    {
+      return res.status(400).json({ error: 'User not found' });
+    }
+  }
+  catch(err)
+  {
+    return res.status(400).json({ error: err.message });
+  }
 }
 
-async function verifyOtp(req, res, next) {
-  const user = await getUserFromCookie("pendingUserId", req);
+async function verifyOtp(req, res, next) 
+{
+  const user = await authServices.getUserFromCookie("pendingUserId", req);
 
   if(!user)
   {
@@ -111,7 +93,7 @@ async function verifyOtp(req, res, next) {
 
   try 
   {
-    await authServices.verifyUserMailID(user, req.body.otp);
+    await authServices.verifyEmail(user, req.body.otp);
     res.clearCookie("pendingUserId"); // Clear the cookie after successful verification
     res.json({message: "OTP verified successfully"});
   }
@@ -124,8 +106,9 @@ async function verifyOtp(req, res, next) {
   
 }
 
-async function signIn(req, res, next) {
-  const user = await userLoginModel.findOne({ username: req.body.username });
+async function signIn(req, res, next) 
+{
+  const user = await authServices.findUser('username', req.body.username );
   if (!user) 
   {
     return res.status(400).json({ error: 'Invalid username or password' });
@@ -136,17 +119,26 @@ async function signIn(req, res, next) {
     return res.status(400).json({ error: 'Account not verified. Please check your email for the OTP.' });
   }
 
-  const isMatch = await bcrypt.compare(req.body.password, user.password);
-  if (!isMatch) 
+  try
   {
-    return res.status(400).json({ error: 'Invalid username or password' });
+    const isMatch = await authServices.login(user, req.body.password);
+    if (!isMatch) 
+    {
+      return res.status(400).json({ error: 'Invalid username or password' });
+    }
+
+    res.json({ message: 'Sign in successful' });
+  }
+  catch(err)
+  {
+    return res.status(400).json({ error: err.message });
   }
 
-  res.json({ message: 'Sign in successful' });
 }
+
 async function forgotPassword(req, res)  
 {
-    const user = await UserLoginModel.findOne({ username: req.body.username });
+    const user = await authServices.findUser('username', req.body.username);
     if (!user) 
     {
       return res.status(400).json({ error: 'User not found' });
@@ -156,8 +148,15 @@ async function forgotPassword(req, res)
       httpOnly: true,
       maxAge: 10 * 60 * 1000
     });
+    try
+    {
+      await authServices.sendVerificationOtp(user);
+    }
+    catch(err)
+    {
+      return res.status(400).json({ error: err.message });
+    }
 
-    await authServices.sendVerificationOtp(user);
     res.json({message: 'OTP sent successfully' });
 
     // res.redirect('/verify-reset-otp');
@@ -166,7 +165,7 @@ async function forgotPassword(req, res)
 async function verifyResetOtp(req, res)
 {
   
-  const user = await getUserFromCookie("resetPasswordUserId", req);
+  const user = await authServices.getUserFromCookie("resetPasswordUserId", req);
 
   if(!user)
   {
@@ -212,3 +211,14 @@ async function resetPassword(req, res)
   }
 
 }
+
+module.exports = {
+    register,
+    sendOtp,
+    verifyOtp,
+    signIn,
+    forgotPassword,
+    verifyResetOtp,
+    resetPassword,
+    findUsers
+};
