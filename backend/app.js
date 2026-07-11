@@ -30,9 +30,9 @@ app.use("/auth", authRoutes);
 app.use('/api/movies', moviesRouter);
 
 // MongoDB connection
-// mongoose.connect(process.env.MONGO_URI)
-//   .then(() => console.log('MongoDB connected'))
-//   .catch(err => console.error('MongoDB connection error:', err));
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('MongoDB connected'))
+    .catch(err => console.error('MongoDB connection error:', err));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
