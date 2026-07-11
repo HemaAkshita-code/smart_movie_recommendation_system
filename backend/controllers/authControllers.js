@@ -2,6 +2,40 @@
 const userLoginModel = require('../models/users');
 const bcrypt = require('bcrypt');
 const authServices = require('../services/authServices');
+const jwt = require("jsonwebtoken");
+
+const secret = "Hulallallallaleo-Hulallallallaleo";
+
+function verifyToken(req, res, next) {
+
+    const token = req.cookies.token;
+
+    if (!token)
+        return res.status(401).json({
+            error: "Please sign in."
+        });
+
+    try {
+
+        const decoded = jwt.verify(
+            token,
+            secret
+        );
+        
+        req.user = decoded;
+
+        next();
+
+    }
+    catch {
+
+        return res.status(401).json({
+            error: "Invalid token"
+        });
+
+    }
+
+}
 
 async function register(req, res, next) {
 
@@ -127,6 +161,16 @@ async function signIn(req, res, next)
       return res.status(400).json({ error: 'Invalid username or password' });
     }
 
+    const token = await authServices.createToken(user);
+
+    res.cookie("token", token, {
+        httpOnly: true,
+        secure: false,      // true in production (HTTPS)
+        sameSite: "lax",
+        maxAge: 30 * 24 * 60 * 60 * 1000
+    });
+
+
     res.json({ message: 'Sign in successful' });
   }
   catch(err)
@@ -220,5 +264,6 @@ module.exports = {
     forgotPassword,
     verifyResetOtp,
     resetPassword,
-    findUsers
+    findUsers,
+    verifyToken
 };

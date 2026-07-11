@@ -2,6 +2,34 @@
 const userLoginModel = require('../models/users');
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
+const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
+
+const secret = "Hulallallallaleo-Hulallallallaleo";
+
+// Create a nodemailer transporter
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'your-email@gmail.com',
+    pass: 'your-email-password'
+  }
+});
+
+async function createToken(user) {
+
+    return jwt.sign(
+        {
+            id: user._id,
+            username: user.username
+        },
+        secret,
+        {
+            expiresIn: "30d"
+        }
+    );
+
+}
 
 async function createUser(name, username, email, password) 
 {
@@ -207,5 +235,6 @@ module.exports = {
     validateUserCredentials,
     login,
     verifyOtp,
-    clearOtp
+    clearOtp,
+    createToken
 };
