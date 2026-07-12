@@ -6,7 +6,8 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var mongoose = require('mongoose');
-
+var reviewsRouter = require('./routes/reviews');
+var watchlistRouter = require('./routes/watchlist');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var moviesRouter = require('./routes/movies');
@@ -23,7 +24,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
+app.use('/api/reviews', reviewsRouter);
+app.use('/api/watchlist', watchlistRouter);
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use("/auth", authRoutes);
