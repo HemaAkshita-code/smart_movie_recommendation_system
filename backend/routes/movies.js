@@ -16,12 +16,26 @@ router.post('/', async function(req, res) {
 // =======================
 // READ ALL
 // =======================
+// READ ALL - with optional filters
 router.get('/', async function(req, res) {
-    try {
-        const movies = await Movie.find();
-        res.json(movies);
+try {
+    const { genre, year, title } = req.query;
+    let filter = {};
+
+    if (genre) {
+      filter.genre = { $regex: genre, $options: 'i' }; // matches any genre containing this word
+    }
+    if (year) {
+        filter.releaseYear = parseInt(year);
+    }
+    if (title) {
+        filter.title = { $regex: title, $options: 'i' };
+    }
+
+    const movies = await Movie.find(filter);
+    res.json(movies);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message });
     }
 });
 

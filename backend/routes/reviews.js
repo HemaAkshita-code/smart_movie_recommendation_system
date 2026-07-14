@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var Review = require('../models/review');
+var mongoose = require('mongoose');
 
 // CREATE
 router.post('/', async function(req, res) {
@@ -21,7 +22,33 @@ router.get('/movie/:movieId', async function(req, res) {
     res.status(500).json({ error: err.message });
     }
 });
+// AGGREGATION - average rating for a movie
+router.get('/movie/:movieId/average-rating', async function(req, res) {
+    try {
+    const result = await Review.aggregate([
+        { $match: { movie: new mongoose.Types.ObjectId(req.params.movieId) } },
+        { 
+        $group: { 
+            _id: '$movie', 
+            averageRating: { $avg: '$rating' }, 
+            totalReviews: { $sum: 1 } 
+        } 
+        }
+    ]);
 
+    if (result.length === 0) {
+        return res.json({ averageRating: 0, totalReviews: 0 });
+    }
+
+    res.json({
+      averageRating: Math.round(result[0].averageRating * 10) / 10, // round to 1 decimal
+        totalReviews: result[0].totalReviews
+    });
+
+    } catch (err) {
+    res.status(500).json({ error: err.message });
+    }
+});
 // READ ONE
 router.get('/:id', async function(req, res) {
     try {
