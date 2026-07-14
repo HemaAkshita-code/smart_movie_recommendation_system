@@ -1,7 +1,7 @@
-# Information Architecture
+# Information Architecture(Flow of how the website runs n the components in each page)
 
 
-## Application Structure (Flow of how the website runs n the components in each page)
+## Application Structure 
 
 CineCompass
 
