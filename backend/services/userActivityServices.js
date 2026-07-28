@@ -1,5 +1,6 @@
 const Movie = require("../models/movies");
-const userWatchHistory = require("../models/userWatchHistory")
+const userWatchHistory = require("../models/userWatchHistory");
+const userWatchList = require("../models/userWatchList");
 
 async function updateWatchHistory(userId, movie)
 {
@@ -12,9 +13,19 @@ async function updateWatchHistory(userId, movie)
 
 }
 
+async function updateWatchList(userId, movie)
+{
+    userWatchList.user = userId;
+    userWatchList.movie = movie._id;
+    userWatchList.status = "watching";
+    
+    userWatchList.save();
+
+}
+
 async function getMovieByName(movieName)
 {
     return await Movie.findOne({title : movieName});
 }
 
-module.exports = {updateWatchList};
+module.exports = {updateWatchHistory, updateWatchList};

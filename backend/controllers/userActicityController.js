@@ -9,6 +9,7 @@ function updateWatchHistory(req, res, next)
         {
             const movie = await userActivityServices.getMovieByName(req.params.movie);
             await userActivityServices.updateWatchHistory(req.params.userid, movie);
+            await userActivityServices.updateWatchList(req.params.userid, movie);
         }
         catch(err)
         {
