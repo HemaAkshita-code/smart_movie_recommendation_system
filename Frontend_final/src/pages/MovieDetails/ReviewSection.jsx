@@ -4,21 +4,23 @@ import { submitReview } from "../../redux/reviews/reviewSlice";
 
 const ReviewSection = ({ movieId }) => {
   const dispatch = useDispatch();
-  const { status, error } = useSelector((state) => state.reviews);
+  const currentUser = useSelector((state) => state.auth.user);
 
   const handleReviewSubmit = async ({ rating, text, isSpoiler }) => {
-    const result = await dispatch(submitReview({ movieId, rating, text, isSpoiler }));
+    const result = await dispatch(submitReview({
+      userId: currentUser._id,
+      movieId: movieId,
+      rating: rating,
+      reviewText: text,
+      isSpoiler: isSpoiler,
+    }));
+
     if (submitReview.fulfilled.match(result)) {
-      // success — maybe show a toast, or clear form via key remount
+      alert("Review posted!");
     }
   };
 
-  return (
-    <div>
-      <ReviewEditor onSubmit={handleReviewSubmit} submitLabel="Post Review" />
-      {status === "failed" && <p className="text-sm text-destructive mt-2">{error}</p>}
-    </div>
-  );
+  return <ReviewEditor onSubmit={handleReviewSubmit} submitLabel="Post Review" />;
 };
 
 export default ReviewSection;
