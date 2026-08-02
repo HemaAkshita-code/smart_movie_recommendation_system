@@ -1,79 +1,105 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { Play, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
+import MoviePoster from "../movie/MoviePoster";
 
 const HeroSection = () => {
   return (
-    <section className="relative overflow-hidden py-20 md:py-32 bg-background">
-      <div className="max-w-[1280px] mx-auto px-6 sm:px-8">
+    <section className="relative overflow-hidden py-24 md:py-32 bg-background select-none min-h-[90vh] flex items-center">
+      {/* Subtle animated background gradients */}
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-45 dark:opacity-25">
+        <motion.div
+          animate={{
+            x: [0, 40, 0],
+            y: [0, -30, 0],
+          }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-12 -left-12 w-96 h-96 bg-primary/10 rounded-full blur-[80px]"
+        />
+        <motion.div
+          animate={{
+            x: [0, -30, 0],
+            y: [0, 40, 0],
+          }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -bottom-24 -right-24 w-[400px] h-[400px] bg-secondary/10 rounded-full blur-[100px]"
+        />
+      </div>
+
+      <div className="max-w-[1280px] mx-auto px-6 sm:px-8 w-full relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
           
-          {/* Left Column: Editorial Headings & Call to Actions */}
+          {/* Left Column: Oversized Editorial Typography & CTAs */}
           <div className="lg:col-span-6 space-y-8 text-left">
-            <span className="text-xs font-semibold tracking-widest uppercase text-primary/80">
-              A Personal Curator
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold tracking-wider uppercase text-primary bg-primary/10 rounded-full">
+              <Sparkles className="w-3.5 h-3.5" />
+              CineCompass AI
             </span>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-heading font-bold text-foreground leading-[1.08] tracking-tight">
-              The art of <br />
-              discovering <br />
-              <span className="text-primary italic font-light font-heading">cinema.</span>
+            <h1 className="text-4xl sm:text-6xl font-heading font-bold text-foreground leading-[1.08] tracking-tight">
+              AI that <br />
+              understands <br />
+              <span className="text-primary italic font-light font-heading">your movie taste.</span>
             </h1>
             <p className="text-base sm:text-lg text-muted-foreground max-w-md leading-relaxed font-sans">
-              CineCompass maps your unique Taste DNA to guide you through film history, introducing masterpieces aligned with your sensibilities.
+              Discover cinema tailored to your unique Taste DNA. No crowdsourced noise, no endless scrolling. Just hand-curated recommendation paths matching your mood.
             </p>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-6 pt-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
               <Link
                 to="/register"
-                className="px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-btn hover:opacity-95 transition-opacity flex items-center justify-center gap-2 shadow-none text-sm tracking-wide"
+                className="px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-btn hover:opacity-90 transition-opacity flex items-center justify-center gap-2 shadow-elevation-1 text-sm tracking-wide"
               >
-                Begin Your Journey
-                <ArrowRight className="w-4 h-4" strokeWidth={1.5} />
+                Discover Movies
               </Link>
-              <Link
-                to="/discover"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors py-2 text-center"
+              <a
+                href="#search-preview"
+                className="px-8 py-4 bg-muted hover:bg-muted/80 text-foreground font-semibold rounded-btn transition-colors flex items-center justify-center gap-2 text-sm text-center border border-border/10"
               >
-                Browse without an account &rarr;
-              </Link>
+                <Play className="w-4 h-4 fill-current text-muted-foreground" />
+                Watch Demo
+              </a>
             </div>
           </div>
 
-          {/* Right Column: Staggered Movie Poster Collage */}
+          {/* Right Column: Layered, Parallax Movie Poster Collage */}
           <div className="lg:col-span-6 flex justify-center">
-            <div className="relative w-full max-w-[500px] h-[450px] sm:h-[500px]">
+            <div className="relative w-full max-w-[500px] h-[480px]">
               
-              {/* Poster 1: Wong Kar-wai - In the Mood for Love */}
-              <div className="absolute top-[5%] left-[5%] w-[180px] sm:w-[200px] aspect-[2/3] bg-gradient-to-t from-red-950/95 via-red-900/60 to-amber-900/20 rounded-poster border border-white/10 shadow-elevation-2 transform -rotate-6 hover:-rotate-3 hover:-translate-y-2 transition-all duration-300 group flex flex-col justify-end p-4">
-                <span className="text-[10px] tracking-wider uppercase text-amber-200/60 font-semibold mb-1">
-                  WONG KAR-WAI
-                </span>
-                <h3 className="font-heading font-bold text-sm sm:text-base text-white leading-tight">
-                  In the Mood <br />for Love
-                </h3>
-                <span className="text-[10px] text-white/50 mt-1">2000 &bull; Romance</span>
-              </div>
+              {/* Back Poster: Céline Sciamma - Portrait of a Lady on Fire */}
+              <motion.div
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-[8%] left-[2%] w-[160px] sm:w-[180px] z-10"
+              >
+                <MoviePoster
+                  title="Portrait of a Lady on Fire"
+                  className="shadow-elevation-2 transform -rotate-6 border border-white/5 bg-gradient-to-t from-emerald-950 to-zinc-900"
+                />
+              </motion.div>
 
-              {/* Poster 2: Denis Villeneuve - Blade Runner 2049 */}
-              <div className="absolute top-[20%] right-[5%] w-[180px] sm:w-[200px] aspect-[2/3] bg-gradient-to-t from-cyan-950/95 via-slate-900/50 to-pink-950/20 rounded-poster border border-white/10 shadow-elevation-3 transform rotate-3 hover:rotate-1 hover:-translate-y-2 transition-all duration-300 z-10 flex flex-col justify-end p-4">
-                <span className="text-[10px] tracking-wider uppercase text-cyan-300/60 font-semibold mb-1">
-                  DENIS VILLENEUVE
-                </span>
-                <h3 className="font-heading font-bold text-sm sm:text-base text-white leading-tight">
-                  Blade Runner <br />2049
-                </h3>
-                <span className="text-[10px] text-white/50 mt-1">2017 &bull; Sci-Fi</span>
-              </div>
+              {/* Center Main Poster: Christopher Nolan - Interstellar */}
+              <motion.div
+                animate={{ y: [0, 8, 0] }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-[20%] left-[28%] w-[180px] sm:w-[210px] z-20"
+              >
+                <MoviePoster
+                  title="Interstellar"
+                  className="shadow-elevation-4 border border-white/10 bg-gradient-to-t from-slate-950 to-zinc-900"
+                />
+              </motion.div>
 
-              {/* Poster 3: Céline Sciamma - Portrait of a Lady on Fire */}
-              <div className="absolute bottom-[5%] left-[25%] w-[170px] sm:w-[190px] aspect-[2/3] bg-gradient-to-t from-emerald-950/95 via-teal-900/50 to-amber-950/20 rounded-poster border border-white/10 shadow-elevation-2 transform rotate-1 hover:-rotate-1 hover:-translate-y-2 transition-all duration-300 flex flex-col justify-end p-4">
-                <span className="text-[10px] tracking-wider uppercase text-emerald-300/60 font-semibold mb-1">
-                  C&Eacute;LINE SCIAMMA
-                </span>
-                <h3 className="font-heading font-bold text-sm sm:text-base text-white leading-tight">
-                  Portrait of a <br />Lady on Fire
-                </h3>
-                <span className="text-[10px] text-white/50 mt-1">2019 &bull; Drama</span>
-              </div>
+              {/* Front Right Poster: Wong Kar-wai - In the Mood for Love */}
+              <motion.div
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-[5%] right-[2%] w-[150px] sm:w-[170px] z-30"
+              >
+                <MoviePoster
+                  title="In the Mood for Love"
+                  className="shadow-elevation-3 transform rotate-6 border border-white/5 bg-gradient-to-t from-red-950 to-zinc-900"
+                />
+              </motion.div>
 
             </div>
           </div>
@@ -85,3 +111,4 @@ const HeroSection = () => {
 };
 
 export default HeroSection;
+export { HeroSection };
