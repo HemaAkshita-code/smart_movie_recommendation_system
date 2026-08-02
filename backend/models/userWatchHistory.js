@@ -8,7 +8,7 @@ const userWatchHistorySchema = mongoose.Schema({
     movie: { type: mongoose.Schema.Types.ObjectId, ref: 'Movie', required: true },
     watchedPercentage: {type: Number, default : 0},
     watchTime: {type : Number, default: 0},
-    rewatchCount: {type: Number, default: 1}
+    rewatchCount: {type: Number, default: -1}
 })
 
 const userWatchHistoryModel = mongoose.model('userWatchHistory', userWatchHistorySchema);

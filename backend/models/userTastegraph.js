@@ -39,6 +39,11 @@ const userTasteGraphSchema = new mongoose.Schema({
         type: Map,
         of: Number,
         default: {}
+    },
+
+    reviewAnalysis: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {}
     }
 });
 

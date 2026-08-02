@@ -3,26 +3,26 @@ import { Link } from "react-router-dom";
 
 const CTASection = () => {
   return (
-    <section className="py-32 bg-background border-t border-border/10">
+    <section className="py-28 bg-background border-t border-border/10">
       <div className="max-w-[1280px] mx-auto px-6 text-center space-y-8">
         
-        {/* Sora Header */}
+        {/* Title */}
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading font-bold text-foreground leading-tight max-w-2xl mx-auto">
-          Ready to find your <br />next favorite film?
+          Find your next favorite movie.
         </h2>
         
-        {/* Description */}
-        <p className="text-muted-foreground text-base sm:text-lg max-w-md mx-auto font-sans leading-relaxed">
-          Create your CineCompass account today, build your Taste DNA, and discovery cinema built around you.
+        {/* Subtext */}
+        <p className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto font-sans leading-relaxed">
+          Experience AI recommendations that truly understand your taste.
         </p>
         
-        {/* Action Button */}
-        <div className="pt-4">
+        {/* Start Exploring Button */}
+        <div className="pt-2">
           <Link
             to="/register"
-            className="px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-btn hover:opacity-95 transition-opacity inline-block text-sm tracking-wide"
+            className="px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-btn hover:opacity-90 transition-opacity inline-block text-sm tracking-wide shadow-elevation-1"
           >
-            Create Your Taste DNA
+            Start Exploring
           </Link>
         </div>
         
@@ -32,3 +32,4 @@ const CTASection = () => {
 };
 
 export default CTASection;
+export { CTASection };
