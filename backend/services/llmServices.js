@@ -183,8 +183,6 @@ Example
     return await extractMovieFeatures.choices[0].message.content;
 }
 
-
-
 async function createEmbedding(text) {
     const response = await ai.models.embedContent({
         model: "gemini-embedding-001",
