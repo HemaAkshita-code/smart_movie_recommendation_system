@@ -42,27 +42,27 @@ describe('Review API', () => {
     expect(res.statusCode).toBe(400);
   });
 
-  test('POST /api/reviews - fails with rating out of range', async () => {
-    const res = await request(app).post('/api/reviews').send({
-      movie: testMovieId,
-      user: testUserId,
-      rating: 15,
-      reviewText: 'Invalid rating test'
-    });
-    expect(res.statusCode).toBe(400);
+test('POST /api/reviews - fails with rating out of range', async () => {
+  const res = await request(app).post('/api/reviews').send({
+    movie: testMovieId,
+    user: testUserId,
+    rating: 8,
+    reviewText: 'Invalid rating test'
   });
+  expect(res.statusCode).toBe(400);
+});
 
-  test('POST /api/reviews - creates a review with valid data', async () => {
-    const res = await request(app).post('/api/reviews').send({
-      movie: testMovieId,
-      user: testUserId,
-      rating: 8,
-      reviewText: 'Great test movie.'
-    });
-    expect(res.statusCode).toBe(201);
-    expect(res.body.rating).toBe(8);
-    createdReviewId = res.body._id;
+test('POST /api/reviews - creates a review with valid data', async () => {
+  const res = await request(app).post('/api/reviews').send({
+    movie: testMovieId,
+    user: testUserId,
+    rating: 4,
+    reviewText: 'Great test movie.'
   });
+  expect(res.statusCode).toBe(201);
+  expect(res.body.rating).toBe(4);
+  createdReviewId = res.body._id;
+});
 
   test('GET /api/reviews/movie/:movieId - retrieves reviews for the movie', async () => {
     const res = await request(app).get(`/api/reviews/movie/${testMovieId}`);
@@ -73,7 +73,7 @@ describe('Review API', () => {
   test('GET /api/reviews/movie/:movieId/average-rating - calculates average', async () => {
     const res = await request(app).get(`/api/reviews/movie/${testMovieId}/average-rating`);
     expect(res.statusCode).toBe(200);
-    expect(res.body.averageRating).toBe(8);
+    expect(res.body.averageRating).toBe(4);
     expect(res.body.totalReviews).toBe(1);
   });
 
