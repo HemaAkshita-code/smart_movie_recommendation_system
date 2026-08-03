@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var Review = require('../models/review');
 var mongoose = require('mongoose');
+var Notification = require('../models/notification');
 
 // CREATE
 router.post('/', async function(req, res) {
@@ -19,6 +20,16 @@ router.post('/', async function(req, res) {
     }
 
     const review = await Review.create(req.body);
+    try {
+      await Notification.create({
+        user: user,
+        message: `Your review was posted successfully! You rated this movie ${rating}/10.`,
+        type: 'new_review'
+      });
+    } catch (notifErr) {
+      console.error('Notification creation failed (non-blocking):', notifErr.message);
+    }
+
     res.status(201).json(review);
   } catch (err) {
     if (err.name === 'ValidationError') {

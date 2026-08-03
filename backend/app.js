@@ -12,6 +12,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var moviesRouter = require('./routes/movies');
 const authRoutes = require("./routes/authRoutes");
+var notificationsRouter = require('./routes/notifications');
 
 var app = express();
 
@@ -31,6 +32,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use("/auth", authRoutes);
 app.use('/api/movies', moviesRouter);
+app.use('/api/notifications', notificationsRouter);
 
 const dns = require('dns');
 
