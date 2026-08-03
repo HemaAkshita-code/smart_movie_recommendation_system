@@ -13,6 +13,8 @@ var usersRouter = require('./routes/users');
 var moviesRouter = require('./routes/movies');
 const authRoutes = require("./routes/authRoutes");
 var notificationsRouter = require('./routes/notifications');
+var cron = require('node-cron');
+var updateMovieStats = require('./workers/updateMovieStats');
 
 var app = express();
 
@@ -47,6 +49,16 @@ mongoose.connect(process.env.MONGO_URI)
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
+});
+
+// Background worker: refresh movie stats every 10 minutes
+cron.schedule('*/10 * * * *', () => {
+  updateMovieStats();
+});
+
+// Run once on startup too, so stats aren't stale from the last shutdown
+mongoose.connection.once('open', () => {
+  updateMovieStats();
 });
 
 // error handler
