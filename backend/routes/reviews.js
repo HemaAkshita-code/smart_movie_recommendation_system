@@ -5,12 +5,28 @@ var mongoose = require('mongoose');
 
 // CREATE
 router.post('/', async function(req, res) {
-    try {
+  try {
+    const { movie, user, rating, reviewText } = req.body;
+
+    if (!movie || !user || !rating || !reviewText) {
+      return res.status(400).json({ 
+        error: 'movie, user, rating, and reviewText are all required' 
+      });
+    }
+
+    if (rating < 1 || rating > 10) {
+      return res.status(400).json({ error: 'rating must be between 1 and 10' });
+    }
+
     const review = await Review.create(req.body);
     res.status(201).json(review);
-    } catch (err) {
-    res.status(400).json({ error: err.message });
+  } catch (err) {
+    if (err.name === 'ValidationError') {
+      const messages = Object.values(err.errors).map(e => e.message);
+      return res.status(400).json({ error: messages.join(', ') });
     }
+    res.status(500).json({ error: 'Something went wrong. Please try again.' });
+  }
 });
 
 // READ ALL reviews for a specific movie

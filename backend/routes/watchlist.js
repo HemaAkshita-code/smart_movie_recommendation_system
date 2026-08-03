@@ -4,12 +4,29 @@ var Watchlist = require('../models/watchlist');
 
 // CREATE - add movie to watchlist
 router.post('/', async function(req, res) {
-    try {
+  try {
+    const { user, movie } = req.body;
+
+    if (!user || !movie) {
+      return res.status(400).json({ error: 'user and movie are both required' });
+    }
+
+    const validStatuses = ['Want to Watch', 'Watching', 'Completed'];
+    if (req.body.status && !validStatuses.includes(req.body.status)) {
+      return res.status(400).json({ 
+        error: `status must be one of: ${validStatuses.join(', ')}` 
+      });
+    }
+
     const entry = await Watchlist.create(req.body);
     res.status(201).json(entry);
-    } catch (err) {
-    res.status(400).json({ error: err.message });
+  } catch (err) {
+    if (err.name === 'ValidationError') {
+      const messages = Object.values(err.errors).map(e => e.message);
+      return res.status(400).json({ error: messages.join(', ') });
     }
+    res.status(500).json({ error: 'Something went wrong. Please try again.' });
+  }
 });
 
 // READ ALL - get a user's full watchlist

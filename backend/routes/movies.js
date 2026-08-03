@@ -5,12 +5,24 @@ var Movie = require('../models/movies');
 // CREATE
 
 router.post('/', async function(req, res) {
-    try {
-        const movie = await Movie.create(req.body);
-        res.status(201).json(movie);
-    } catch (err) {
-        res.status(400).json({ error: err.message });
+  try {
+    const { title, description, genre, releaseYear } = req.body;
+
+    if (!title || !description || !genre || !releaseYear) {
+      return res.status(400).json({ 
+        error: 'title, description, genre, and releaseYear are all required' 
+      });
     }
+
+    const movie = await Movie.create(req.body);
+    res.status(201).json(movie);
+  } catch (err) {
+    if (err.name === 'ValidationError') {
+      const messages = Object.values(err.errors).map(e => e.message);
+      return res.status(400).json({ error: messages.join(', ') });
+    }
+    res.status(500).json({ error: 'Something went wrong. Please try again.' });
+  }
 });
 
 // =======================
