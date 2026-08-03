@@ -6,13 +6,13 @@ var Movie = require('../models/movies');
 
 router.post('/', async function(req, res) {
   try {
-    const { title, description, genre, releaseYear } = req.body;
+const { title, description, genre, releaseYear, duration, director } = req.body;
 
-    if (!title || !description || !genre || !releaseYear) {
-      return res.status(400).json({ 
-        error: 'title, description, genre, and releaseYear are all required' 
-      });
-    }
+if (!title || !description || !genre || !releaseYear || !duration || !director) {
+  return res.status(400).json({ 
+    error: 'title, description, genre, releaseYear, duration, and director are all required' 
+  });
+}
 
     const movie = await Movie.create(req.body);
     res.status(201).json(movie);
