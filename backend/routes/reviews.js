@@ -2,15 +2,48 @@ var express = require('express');
 var router = express.Router();
 var Review = require('../models/review');
 var mongoose = require('mongoose');
+var Notification = require('../models/notification');
+const llmService = require('../services/llmServices');
+const userTasteGraphModel = require('../models/userTastegraph');
 
 // CREATE
 router.post('/', async function(req, res) {
-    try {
-    const review = await Review.create(req.body);
-    res.status(201).json(review);
-    } catch (err) {
-    res.status(400).json({ error: err.message });
+  try {
+    const { movie, user, rating, reviewText } = req.body;
+
+    if (!movie || !user || !rating || !reviewText) {
+      return res.status(400).json({ 
+        error: 'movie, user, rating, and reviewText are all required' 
+      });
     }
+
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({ error: 'rating must be between 1 and 5' });
+    }
+
+    const review = await Review.create(req.body);
+    try {
+      const analysis = await llmService.reviewAnalyser(req.body.review);
+      userTasteGraphModel.reviewAnalysis = analysis;
+      await userTasteGraphModel.save();
+
+      await Notification.create({
+        user: user,
+        message: `Your review was posted successfully! You rated this movie ${rating}/5.`,
+        type: 'new_review'
+      });
+    } catch (notifErr) {
+      console.error('Notification creation failed (non-blocking):', notifErr.message);
+    }
+
+    res.status(201).json(review);
+  } catch (err) {
+    if (err.name === 'ValidationError') {
+      const messages = Object.values(err.errors).map(e => e.message);
+      return res.status(400).json({ error: messages.join(', ') });
+    }
+    res.status(500).json({ error: 'Something went wrong. Please try again.' });
+  }
 });
 
 // READ ALL reviews for a specific movie

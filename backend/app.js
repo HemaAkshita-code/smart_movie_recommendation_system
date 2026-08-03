@@ -1,5 +1,5 @@
 require('dotenv').config();
-
+var profileRouter = require('./routes/profile');
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -12,6 +12,10 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var moviesRouter = require('./routes/movies');
 const authRoutes = require("./routes/authRoutes");
+var notificationsRouter = require('./routes/notifications');
+var cron = require('node-cron');
+var updateMovieStats = require('./workers/updateMovieStats');
+var tasteProfileRouter = require('./routes/tasteProfile');
 
 var app = express();
 
@@ -24,12 +28,20 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/api/profile', profileRouter);
 app.use('/api/reviews', reviewsRouter);
 app.use('/api/watchlist', watchlistRouter);
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use("/auth", authRoutes);
 app.use('/api/movies', moviesRouter);
+app.use('/api/notifications', notificationsRouter);
+app.use('/api/taste', tasteProfileRouter);
+
+const dns = require('dns');
+
+// Force Node to use Google DNS
+dns.setServers(['8.8.8.8', '8.8.4.4']);
 
 // MongoDB connection
 mongoose.connect(process.env.MONGO_URI)
@@ -39,6 +51,16 @@ mongoose.connect(process.env.MONGO_URI)
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
+});
+
+// Background worker: refresh movie stats every 10 minutes
+cron.schedule('*/10 * * * *', () => {
+  updateMovieStats();
+});
+
+// Run once on startup too, so stats aren't stale from the last shutdown
+mongoose.connection.once('open', () => {
+  updateMovieStats();
 });
 
 // error handler

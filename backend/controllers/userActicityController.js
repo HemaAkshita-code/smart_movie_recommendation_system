@@ -6,7 +6,7 @@ function updateWatchHistory(req, res, next)
     if(req.params.movie && req.params.movie.trim())
     {
         try
-        {
+        {   
             const movie = await userActivityServices.getMovieByName(req.params.movie);
             await userActivityServices.updateWatchHistory(req.params.userid, movie);
             await userActivityServices.updateWatchList(req.params.userid, movie);

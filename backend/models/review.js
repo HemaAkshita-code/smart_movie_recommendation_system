@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const reviewSchema = new mongoose.Schema({
     movie: { type: mongoose.Schema.Types.ObjectId, ref: 'Movie', required: true },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'UserLogin', required: true },
-    rating: { type: Number, required: true, min: 1, max: 10 },
+    rating: { type: Number, required: true, min: 1, max: 5 },
     reviewText: { type: String, required: true, trim: true, maxlength: 1000 },
     createdAt: { type: Date, default: Date.now }
 });

@@ -5,12 +5,24 @@ var Movie = require('../models/movies');
 // CREATE
 
 router.post('/', async function(req, res) {
-    try {
-        const movie = await Movie.create(req.body);
-        res.status(201).json(movie);
-    } catch (err) {
-        res.status(400).json({ error: err.message });
+  try {
+const { title, description, genre, releaseYear, duration, director } = req.body;
+
+if (!title || !description || !genre || !releaseYear || !duration || !director) {
+  return res.status(400).json({ 
+    error: 'title, description, genre, releaseYear, duration, and director are all required' 
+  });
+}
+
+    const movie = await Movie.create(req.body);
+    res.status(201).json(movie);
+  } catch (err) {
+    if (err.name === 'ValidationError') {
+      const messages = Object.values(err.errors).map(e => e.message);
+      return res.status(400).json({ error: messages.join(', ') });
     }
+    res.status(500).json({ error: 'Something went wrong. Please try again.' });
+  }
 });
 
 // =======================
@@ -106,7 +118,7 @@ console.log("Credits status:", creditsResponse.status);
         const details = await detailsResponse.json();
         const credits = await creditsResponse.json();
 
-        // ----------------------------
+// ----------------------------
         // 4. Extract Genres
         // ----------------------------
         const genres = details.genres
@@ -121,12 +133,22 @@ console.log("Credits status:", creditsResponse.status);
             : [];
 
         // ----------------------------
+        // 5b. Extract Director
+        // ----------------------------
+        const directorEntry = credits.crew
+            ? credits.crew.find(person => person.job === 'Director')
+            : null;
+        const director = directorEntry ? directorEntry.name : 'Unknown';
+
+        // ----------------------------
         // 6. Save to MongoDB
         // ----------------------------
         const newMovie = await Movie.create({
             title: details.title,
             description: details.overview,
             genre: genres,
+            duration: details.runtime || 0,
+            director: director,
             releaseYear: details.release_date
                 ? parseInt(details.release_date.substring(0, 4))
                 : null,
@@ -135,7 +157,6 @@ console.log("Credits status:", creditsResponse.status);
                 : null,
             cast: cast
         });
-
         // ----------------------------
         // 7. Return Movie
         // ----------------------------
