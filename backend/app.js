@@ -15,6 +15,7 @@ const authRoutes = require("./routes/authRoutes");
 var notificationsRouter = require('./routes/notifications');
 var cron = require('node-cron');
 var updateMovieStats = require('./workers/updateMovieStats');
+var tasteProfileRouter = require('./routes/tasteProfile');
 
 var app = express();
 
@@ -35,6 +36,7 @@ app.use('/users', usersRouter);
 app.use("/auth", authRoutes);
 app.use('/api/movies', moviesRouter);
 app.use('/api/notifications', notificationsRouter);
+app.use('/api/taste', tasteProfileRouter);
 
 const dns = require('dns');
 
