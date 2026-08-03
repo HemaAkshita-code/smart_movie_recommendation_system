@@ -23,7 +23,7 @@ router.post('/', async function(req, res) {
     try {
       await Notification.create({
         user: user,
-        message: `Your review was posted successfully! You rated this movie ${rating}/10.`,
+        message: `Your review was posted successfully! You rated this movie ${rating}/5.`,
         type: 'new_review'
       });
     } catch (notifErr) {
