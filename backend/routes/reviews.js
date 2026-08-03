@@ -15,8 +15,8 @@ router.post('/', async function(req, res) {
       });
     }
 
-    if (rating < 1 || rating > 10) {
-      return res.status(400).json({ error: 'rating must be between 1 and 10' });
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({ error: 'rating must be between 1 and 5' });
     }
 
     const review = await Review.create(req.body);
