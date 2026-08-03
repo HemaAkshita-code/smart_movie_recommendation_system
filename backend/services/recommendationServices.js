@@ -3,6 +3,7 @@ const llmService = require('./llmServices');
 const UserTasteGraph = require('../models/userTastegraph');
 const MovieFeatureGraph = require('../models/movieFeatureModel');
 const preprocess = require('./preprocessServices');
+const RecommendationScore = require('../models/recommendationScore');
 
 function cosineSimilarity(a, b) {
 
@@ -199,4 +200,53 @@ async function directionSimilarity(movieID, userID)
     }
 }
 
-module.exports = {cosineSimilarity, overallSimilarity, comedySimilarity, actionSimilarity, storySimilarity, themeSimilarity, genreSimilarity, musicSimilarity, directionSimilarity};
+async function emotionSimilarity(movieID, userID) 
+{
+    const movieFeature = await MovieFeatureGraph.findOne({ movie: movieID });
+    const userTasteFeature = await UserTasteGraph.findOne({ user: userID });
+
+    try
+    {
+        const movieText = preprocess.graphToText(movieFeature.features.emotion);
+        const userTasteText = preprocess.graphToText(userTasteFeature);
+
+        const embeddingA = await llmService.createEmbedding(movieText);
+        const embeddingB = await llmService.createEmbedding(userTasteText);
+        return cosineSimilarity(embeddingA, embeddingB);
+    }
+    catch (error) {
+        console.error("Error occurred while calculating emotion similarity:", error);
+        throw error;
+    }
+}
+
+async function updateRecommendationScore(userID, movieID)
+{
+
+    let recommendation = await RecommendationScore.findOne({
+        user: userID,
+        movie: movieID
+    });
+
+    if (!recommendation) {
+        recommendation = new RecommendationScore({
+            user: userID,
+            movie: movieID
+        });
+    }
+
+    recommendation.overallScore = await overallSimilarity(movieID, userID);
+    recommendation.scores.comedy = await comedySimilarity(movieID, userID);
+    recommendation.scores.action = await actionSimilarity(movieID, userID);
+    recommendation.scores.story = await storySimilarity(movieID, userID);
+    recommendation.scores.theme = await themeSimilarity(movieID, userID);
+    recommendation.scores.genre = await genreSimilarity(movieID, userID);
+    recommendation.scores.music = await musicSimilarity(movieID, userID);
+    recommendation.scores.ending = await endingSimilarity(movieID, userID);
+    recommendation.scores.direction = await directionSimilarity(movieID, userID);
+    recommendation.scores.emotion = await emotionSimilarity(movieID, userID);
+
+    await recommendation.save();
+}
+
+module.exports = {cosineSimilarity, overallSimilarity, comedySimilarity, actionSimilarity, storySimilarity, themeSimilarity, genreSimilarity, musicSimilarity, directionSimilarity, emotionSimilarity};

@@ -12,7 +12,9 @@ const recommendationScoreSchema = mongoose.Schema({
         acting: Number,
         music: Number,
         ending: Number,
-        emotion: Number
+        emotion: Number,
+        direction: Number,
+
     },
 
     overallScore: Number,
