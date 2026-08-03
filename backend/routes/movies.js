@@ -118,7 +118,7 @@ console.log("Credits status:", creditsResponse.status);
         const details = await detailsResponse.json();
         const credits = await creditsResponse.json();
 
-        // ----------------------------
+// ----------------------------
         // 4. Extract Genres
         // ----------------------------
         const genres = details.genres
@@ -133,12 +133,22 @@ console.log("Credits status:", creditsResponse.status);
             : [];
 
         // ----------------------------
+        // 5b. Extract Director
+        // ----------------------------
+        const directorEntry = credits.crew
+            ? credits.crew.find(person => person.job === 'Director')
+            : null;
+        const director = directorEntry ? directorEntry.name : 'Unknown';
+
+        // ----------------------------
         // 6. Save to MongoDB
         // ----------------------------
         const newMovie = await Movie.create({
             title: details.title,
             description: details.overview,
             genre: genres,
+            duration: details.runtime || 0,
+            director: director,
             releaseYear: details.release_date
                 ? parseInt(details.release_date.substring(0, 4))
                 : null,
@@ -147,7 +157,6 @@ console.log("Credits status:", creditsResponse.status);
                 : null,
             cast: cast
         });
-
         // ----------------------------
         // 7. Return Movie
         // ----------------------------
