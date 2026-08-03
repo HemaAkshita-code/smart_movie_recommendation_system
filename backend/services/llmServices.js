@@ -4,6 +4,14 @@
         apiKey: process.env.GROQ_API_KEY
     });
 
+    const { GoogleGenAI } = require("@google/genai");
+
+    const ai = new GoogleGenAI({
+        apiKey: process.env.GEMINI_API_KEY
+    });
+
+   async function reviewAnalyser(review) {
+
     const chatCompletion = await groq.chat.completions.create({
         model: "llama-3.3-70b-versatile",
         messages: [
@@ -91,4 +99,99 @@
         ]
     });
 
-    console.log(chatCompletion.choices[0].message.content);
+    return await chatCompletion.choices[0].message.content;
+
+}
+
+async function extractMovieFeatures(movieText) {
+
+    const extractMovieFeatures = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+            {
+                role: "user",
+                content: `
+                            You are a movie analyst.
+
+Analyze the movie using:
+
+- title
+- genres
+- overview
+- tagline
+- cast
+- director
+- keywords
+
+Return ONLY JSON.
+
+Extract features that describe WHY someone would enjoy this movie.
+
+Each category should contain
+
+liked
+feature
+strength (0-1)
+
+Example
+
+{
+    "Comedy": {
+        "liked":[
+            {
+                "feature":"dark humor",
+                "strength":0.91
+            },
+            {
+                "feature":"satire",
+                "strength":0.83
+            }
+        ]
+    },
+
+    "Action":{
+        "liked":[
+            {
+                "feature":"martial arts",
+                "strength":0.92
+            }
+        ]
+    },
+
+    "Story":{
+        "liked":[
+            {
+                "feature":"time travel",
+                "strength":0.88
+            }
+        ]
+    },
+
+    "Emotion":{
+        "liked":[
+            {
+                "feature":"heartwarming",
+                "strength":0.80
+            }
+        ]
+    }
+}`
+            }
+        ]
+    });
+
+    return await extractMovieFeatures.choices[0].message.content;
+}
+
+
+
+async function createEmbedding(text) {
+    const response = await ai.models.embedContent({
+        model: "gemini-embedding-001",
+        contents: text
+    });
+
+    return response.embeddings[0].values;
+}
+
+module.exports = { reviewAnalyser, extractMovieFeatures, createEmbedding };

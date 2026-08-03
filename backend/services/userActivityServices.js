@@ -28,4 +28,6 @@ async function getMovieByName(movieName)
     return await Movie.findOne({title : movieName});
 }
 
+
+
 module.exports = {updateWatchHistory, updateWatchList};
