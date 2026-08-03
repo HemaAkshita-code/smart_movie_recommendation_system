@@ -20,4 +20,4 @@ const recommendationScoreSchema = mongoose.Schema({
     generatedAt: Date
 })
 
-module.exports = mongoose.model(recommendationScoreSchema);
+module.exports = mongoose.model('RecommendationScore', recommendationScoreSchema);

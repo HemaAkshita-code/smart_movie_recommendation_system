@@ -3,6 +3,8 @@ var router = express.Router();
 var Review = require('../models/review');
 var mongoose = require('mongoose');
 var Notification = require('../models/notification');
+const llmService = require('../services/llmServices');
+const userTasteGraphModel = require('../models/userTastegraph');
 
 // CREATE
 router.post('/', async function(req, res) {
@@ -21,6 +23,10 @@ router.post('/', async function(req, res) {
 
     const review = await Review.create(req.body);
     try {
+      const analysis = await llmService.reviewAnalyser(req.body.review);
+      userTasteGraphModel.reviewAnalysis = analysis;
+      await userTasteGraphModel.save();
+
       await Notification.create({
         user: user,
         message: `Your review was posted successfully! You rated this movie ${rating}/10.`,
