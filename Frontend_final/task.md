@@ -1,0 +1,23 @@
+# Taste DNA, Profile & Social Flow Checklist
+
+- [x] Create Profile and Friends Redux slices:
+  - [x] profileSlice.js (updates profile bio settings, accepts invitation requests, removes friend logs, and keeps achievement unlocks)
+- [x] Create Taste DNA subcomponents in `src/components/profile/`:
+  - [x] TasteDNAHero.jsx (displays user personality credentials and DNA score stats)
+  - [x] TasteEvolutionChart.jsx (displays Sparklines comparing month-by-month preference updates)
+  - [x] AIInsightsCard.jsx (conversational curation advice lists)
+  - [x] ViewingInsights.jsx (decade focus, runtime, director, actor statistics cards)
+  - [x] RecommendationEvolution.jsx (influencing movies list and discovered genres)
+- [x] Create Profile subcomponents in `src/components/profile/`:
+  - [x] ProfileHeader.jsx (profile avatar banner card with Edit dialog button)
+  - [x] AchievementsSection.jsx (grid of achievement badges)
+- [x] Create Social/Friends subcomponents in `src/components/profile/`:
+  - [x] FriendCard.jsx (friend compatibility meters and shared items badges)
+  - [x] CompatibilityComparison.jsx (displays co-watching recommended suggestions, overlapping radars and differences)
+- [x] Create the page views:
+  - [x] TasteDNA.jsx under `src/pages/TasteDNA/`
+  - [x] Profile.jsx under `src/pages/Profile/`
+  - [x] Friends.jsx under `src/pages/Friends/`
+- [x] Map routing and protect pages:
+  - [x] AppRoutes.jsx (nest `/taste-dna`, `/profile`, `/profile/:username`, `/friends`, `/friends/:id` under DashboardLayout)
+- [x] Verify production build compiles cleanly without warnings or errors

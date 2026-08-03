@@ -31,3 +31,27 @@ router.get('/profile/:username', authController.verifyToken, async (req, res) =>
 });
 
 module.exports = router;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,15 @@
+export const ROUTES = {
+  LANDING: "/",
+  HOME: "/home",
+  LOGIN: "/login",
+  REGISTER: "/register",
+  DISCOVER: "/discover",
+  SEARCH: "/search",
+  TASTE_DNA: "/taste-dna",
+  MOVIE_DETAILS: "/movie/:id",
+  RECOMMENDATIONS: "/recommendations",
+  WATCHLIST: "/watchlist",
+  PROFILE: "/profile",
+  SETTINGS: "/settings",
+  ADMIN: "/admin",
+};
