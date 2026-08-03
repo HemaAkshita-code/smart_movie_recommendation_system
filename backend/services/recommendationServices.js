@@ -1,4 +1,9 @@
 
+const llmService = require('./llmServices');
+const UserTasteGraph = require('../models/userTastegraph');
+const MovieFetureGraph = require('../models/movieFeaturegraph');
+const preprocess = require('./preprocessServices');
+
 function cosineSimilarity(a, b) {
 
     let dot = 0;
@@ -20,4 +25,17 @@ function cosineSimilarity(a, b) {
     return dot/(Math.sqrt(normA)*Math.sqrt(normB));
 }
 
-module.exports = {cosineSimilarity };
+async function overallSimilarity(movieID, userID) 
+{
+    const movieFeature = await MovieFetureGraph.findOne({ movie: movieID });
+    const userTasteFeature = await UserTasteGraph.findOne({ user: userID });
+
+    const movieText = preprocess.graphToText(movieFeature);
+    const userTasteText = preprocess.graphToText(userTasteFeature);
+
+    const embeddingA = await llmService.createEmbedding(movieText);
+    const embeddingB = await llmService.createEmbedding(userTasteText);
+    return cosineSimilarity(embeddingA, embeddingB);
+}
+
+module.exports = {cosineSimilarity, overallSimilarity };
