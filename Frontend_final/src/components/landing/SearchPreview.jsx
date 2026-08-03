@@ -108,14 +108,14 @@ const SearchPreview = () => {
         </div>
 
         {/* Search Mock Container */}
-        <div className="max-w-4xl mx-auto space-y-12">
+        <div className="max-w-6xl mx-auto space-y-12">
           
           {/* Simulated Input */}
-          <div className="relative w-full max-w-2xl mx-auto">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted-foreground">
+          <div className="relative w-full max-w-3xl mx-auto">
+            <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none text-muted-foreground">
               <Search className="w-5 h-5" strokeWidth={1.5} />
             </div>
-            <div className="flex h-12 w-full rounded-full border border-border bg-card items-center pl-11 pr-4 text-sm text-foreground select-none">
+            <div className="flex h-14 w-full rounded-full border border-border bg-card items-center pl-14 pr-6 text-sm text-foreground select-none">
               <span>{displayText}</span>
               {!isTypingComplete && (
                 <span className="ml-0.5 w-0.5 h-4 bg-primary animate-pulse" />

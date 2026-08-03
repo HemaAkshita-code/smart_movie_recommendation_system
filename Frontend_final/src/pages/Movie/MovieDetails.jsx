@@ -17,7 +17,7 @@ import EmptyState from "../../components/common/EmptyState";
 import MovieCarousel from "../../components/movie/MovieCarousel";
 
 import { MOCK_DB } from "../../redux/discover/discoverSlice";
-import { localAddToWatchlist, localRemoveFromWatchlist } from "../../redux/watchlist/watchlistSlice";
+import { addToWatchlist, removeFromWatchlist } from "../../redux/watchlist/watchlistSlice";
 import { saveNote, saveRating, addHistoryItem } from "../../redux/library/librarySlice";
 
 const MovieDetails = () => {
@@ -43,24 +43,26 @@ const MovieDetails = () => {
   const filmId = parseInt(id) || 1;
   const movie = MOCK_DB.find((m) => m.id === filmId) || MOCK_DB[0];
 
-  const isWatchlisted = watchlistItems.some((item) => item.movie.id === movie.id);
-  const isWatched = watchlistItems.some((item) => item.movie.id === movie.id && item.status === "completed");
+  const isWatchlisted = watchlistItems.some((item) => item._id === movie.id);
+  const isWatched = watchlistItems.some((item) => item._id === movie.id && item.status === "completed");
 
-  const handleToggleWatchlist = () => {
-    if (isWatchlisted) {
-      dispatch(localRemoveFromWatchlist(movie.id));
-    } else {
-      dispatch(localAddToWatchlist(movie));
-      dispatch(
-        addHistoryItem({
-          type: "watchlist",
-          movieTitle: movie.title,
-          detail: "Added to Watchlist",
-          genre: movie.genres[0],
-        })
-      );
-    }
-  };
+  const currentUser = useSelector((state) => state.auth.user);
+
+const handleToggleWatchlist = () => {
+  if (isWatchlisted) {
+    dispatch(removeFromWatchlist(movie.id));
+  } else {
+    dispatch(addToWatchlist({ userId: currentUser?._id, movieId: movie.id, status: "want to watch" }));
+    dispatch(
+      addHistoryItem({
+        type: "watchlist",
+        movieTitle: movie.title,
+        detail: "Added to Watchlist",
+        genre: movie.genres[0],
+      })
+    );
+  }
+};
 
   const handleToggleWatched = () => {
     // Add logic or status updates
