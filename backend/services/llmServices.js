@@ -122,6 +122,31 @@ Analyze the movie using:
 - cast
 - director
 - keywords
+- Comedy
+- Action
+- Story
+- Acting
+- Direction
+- Music
+- Soundtrack
+- Cinematography
+- VisualEffects
+- Dialogue
+- Characters
+- Romance
+- Horror
+- Thriller
+- Mystery
+- SciFi
+- Fantasy
+- Drama
+- Animation
+- Emotion
+- Pacing
+- Ending
+- WorldBuilding
+- Screenplay
+- Editing
 
 Return ONLY JSON.
 
