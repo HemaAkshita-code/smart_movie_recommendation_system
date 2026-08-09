@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { ArrowLeft, Sparkles, MessageSquare } from "lucide-react";
+import { ArrowLeft, MessageSquare } from "lucide-react";
 import Button from "../../components/ui/button";
 
 import MovieHero from "../../components/movie/MovieHero";
@@ -13,85 +13,157 @@ import RatingDialog from "../../components/movie/RatingDialog";
 import TrailerPlayer from "../../components/movie/TrailerPlayer";
 import ReviewCard from "../../components/review/ReviewCard";
 import ReviewEditor from "../../components/review/ReviewEditor";
-import EmptyState from "../../components/common/EmptyState";
 import MovieCarousel from "../../components/movie/MovieCarousel";
 
-import { MOCK_DB } from "../../redux/discover/discoverSlice";
-import { localAddToWatchlist, localRemoveFromWatchlist } from "../../redux/watchlist/watchlistSlice";
+import { mapMovieToFrontend } from "../../redux/discover/discoverSlice";
+import { addToWatchlist, removeFromWatchlist } from "../../redux/watchlist/watchlistSlice";
 import { saveNote, saveRating, addHistoryItem } from "../../redux/library/librarySlice";
+import { fetchReviewsForMovie, fetchAverageRating, submitReview } from "../../redux/reviews/reviewSlice";
 
 const MovieDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  const currentUser = useSelector((state) => state.auth.user);
+  const discoverMovies = useSelector((state) => state.discover.movies);
   const watchlistItems = useSelector((state) => state.watchlist.items);
   const { notes, ratings } = useSelector((state) => state.library);
+  const reviewsList = useSelector((state) => state.reviews.list);
 
+  const [activeMovie, setActiveMovie] = useState(null);
   const [isRateOpen, setIsRateOpen] = useState(false);
-  const [reviews, setReviews] = useState([
-    {
-      id: 1,
-      author: "Julian G.",
-      rating: 4.8,
-      content: "A masterclass in contemplative, slow-paced science fiction. Denis Villeneuve crafts a gorgeous visual journey that stays with you long after the credits roll.",
-      createdAt: "2 weeks ago",
-    },
-  ]);
 
-  // Find film from mock database
-  const filmId = parseInt(id) || 1;
-  const movie = MOCK_DB.find((m) => m.id === filmId) || MOCK_DB[0];
+  // Load single movie
+  useEffect(() => {
+    const found = discoverMovies.find((m) => m.id === id || m._id === id);
+    if (found) {
+      setActiveMovie(found);
+    } else {
+      import("../../lib/axios").then(({ default: api }) => {
+        api.get(`/movies/${id}`)
+          .then((res) => {
+            const mapped = mapMovieToFrontend(res.data);
+            setActiveMovie(mapped);
+          })
+          .catch((err) => {
+            console.error("Failed to fetch movie from backend", err);
+          });
+      });
+    }
+  }, [id, discoverMovies]);
 
-  const isWatchlisted = watchlistItems.some((item) => item.movie.id === movie.id);
-  const isWatched = watchlistItems.some((item) => item.movie.id === movie.id && item.status === "completed");
+  // Load reviews when movie is set
+  useEffect(() => {
+    if (activeMovie) {
+      const mid = activeMovie._id || activeMovie.id;
+      dispatch(fetchReviewsForMovie(mid));
+      dispatch(fetchAverageRating(mid));
+    }
+  }, [dispatch, activeMovie]);
+
+  const movie = activeMovie;
+
+  if (!movie) {
+    return (
+      <div className="flex items-center justify-center min-h-[300px] text-sm text-muted-foreground font-sans">
+        Loading film coordinates...
+      </div>
+    );
+  }
+
+  const isWatchlisted = watchlistItems.some((item) => item.movie && (item.movie._id === movie._id || item.movie.id === movie.id));
+  const isWatched = watchlistItems.some((item) => item.movie && (item.movie._id === movie._id || item.movie.id === movie.id) && item.status === "completed");
 
   const handleToggleWatchlist = () => {
+    if (!currentUser) {
+      alert("Please sign in to update your watchlist.");
+      return;
+    }
+    const mid = movie._id || movie.id;
     if (isWatchlisted) {
-      dispatch(localRemoveFromWatchlist(movie.id));
+      const entry = watchlistItems.find((item) => item.movie && (item.movie._id === movie._id || item.movie.id === movie.id));
+      if (entry) {
+        dispatch(removeFromWatchlist(entry._id || entry.id));
+      }
     } else {
-      dispatch(localAddToWatchlist(movie));
+      dispatch(
+        addToWatchlist({
+          userId: currentUser._id,
+          movieId: mid,
+          status: "want to watch",
+        })
+      );
       dispatch(
         addHistoryItem({
           type: "watchlist",
           movieTitle: movie.title,
           detail: "Added to Watchlist",
-          genre: movie.genres[0],
+          genre: movie.genres ? movie.genres[0] : "",
         })
       );
     }
   };
 
   const handleToggleWatched = () => {
-    // Add logic or status updates
+    if (!currentUser) {
+      alert("Please sign in to update watch status.");
+      return;
+    }
+    const mid = movie._id || movie.id;
+    const entry = watchlistItems.find((item) => item.movie && (item.movie._id === movie._id || item.movie.id === movie.id));
+    if (entry) {
+      dispatch(addToWatchlist({
+        userId: currentUser._id,
+        movieId: mid,
+        status: "completed"
+      }));
+    } else {
+      dispatch(
+        addToWatchlist({
+          userId: currentUser._id,
+          movieId: mid,
+          status: "completed",
+        })
+      );
+    }
     alert(`Marked "${movie.title}" as Watched!`);
   };
 
   const handleSaveNote = (text) => {
-    dispatch(saveNote({ movieId: movie.id, note: text }));
+    const mid = movie._id || movie.id;
+    dispatch(saveNote({ movieId: mid, note: text }));
   };
 
   const handleSaveRating = (stars) => {
-    dispatch(saveRating({ movieId: movie.id, rating: stars }));
+    const mid = movie._id || movie.id;
+    dispatch(saveRating({ movieId: mid, rating: stars }));
     dispatch(
       addHistoryItem({
         type: "rating",
         movieTitle: movie.title,
         detail: `Rated ${stars}.0 Stars`,
-        genre: movie.genres[0],
+        genre: movie.genres ? movie.genres[0] : "",
       })
     );
   };
 
   const handleAddReview = (reviewText) => {
-    const newRev = {
-      id: Date.now(),
-      author: "You",
-      rating: ratings[movie.id] || 4.5,
-      content: reviewText,
-      createdAt: "Just now",
-    };
-    setReviews([newRev, ...reviews]);
+    if (!currentUser) {
+      alert("Please sign in to post reviews.");
+      return;
+    }
+    const mid = movie._id || movie.id;
+    const rating = ratings[mid] || 5;
+    dispatch(
+      submitReview({
+        userId: currentUser._id,
+        movieId: mid,
+        rating,
+        reviewText,
+        isSpoiler: false,
+      })
+    );
   };
 
   return (
@@ -157,7 +229,7 @@ const MovieDetails = () => {
           <StreamingProviders providers={movie.platforms} />
 
           {/* 7. Similar movie suggestions carousel */}
-          <MovieCarousel title="Similar Curations" movies={MOCK_DB.filter((m) => m.id !== movie.id)} />
+          <MovieCarousel title="Similar Curations" movies={discoverMovies.filter((m) => (m._id || m.id) !== (movie._id || movie.id))} />
 
           {/* 8. User reviews & ReviewComposer */}
           <div className="space-y-6">
@@ -171,13 +243,13 @@ const MovieDetails = () => {
 
             {/* List entries */}
             <div className="space-y-4">
-              {reviews.map((rev) => (
+              {reviewsList.map((rev) => (
                 <ReviewCard
-                  key={rev.id}
-                  authorName={rev.author}
+                  key={rev._id || rev.id}
+                  authorName={rev.user ? (rev.user.name || rev.user.username || "User") : "Anonymous"}
                   rating={rev.rating}
-                  content={rev.content}
-                  createdAt={rev.createdAt}
+                  content={rev.reviewText || rev.content}
+                  createdAt={rev.createdAt ? new Date(rev.createdAt).toLocaleDateString() : "Just now"}
                 />
               ))}
             </div>
@@ -188,7 +260,7 @@ const MovieDetails = () => {
         {/* Right Side notes (4 columns) */}
         <div className="lg:col-span-4 space-y-8 sticky top-20">
           <NotesPanel
-            initialNote={notes[movie.id] || ""}
+            initialNote={notes[movie._id || movie.id] || ""}
             onSave={handleSaveNote}
           />
         </div>
@@ -198,7 +270,7 @@ const MovieDetails = () => {
       {/* Star ratings modal popup overlay */}
       <RatingDialog
         isOpen={isRateOpen}
-        initialRating={ratings[movie.id] || 0}
+        initialRating={ratings[movie._id || movie.id] || 0}
         onClose={() => setIsRateOpen(false)}
         onSave={handleSaveRating}
       />

@@ -5,20 +5,28 @@ const Movie = require('../models/movies');
 
 async function updateTasteGraph(userId, movieId, action, rating = null, review = null)
 {
-    const userPreferences = await UserTasteGraph.findOneById(userId);
-    const movie = await Movie.findOne({ user: userId });
+    let userPreferences = await UserTasteGraph.findOne({ user: userId });
+    if (!userPreferences) {
+        userPreferences = new UserTasteGraph({ user: userId });
+    }
 
-    const weight = {
+    const movie = await Movie.findById(movieId);
+    if (!movie) {
+        console.error(`[TasteGraph] Movie with ID ${movieId} not found.`);
+        return;
+    }
+
+    let weight = {
         search: 1,
         watch: 5,
         rating: 2,
         review: 2,
         rewatch: 2
-    }[action];
+    }[action] || 1;
 
     if(action === 'rating')
     {
-        switch(rating)
+        switch(Number(rating))
         {
             case 1:
                 weight *= -2;
@@ -42,27 +50,33 @@ async function updateTasteGraph(userId, movieId, action, rating = null, review =
         }
     }
 
-    for (const genre of movie.genres)
-    {
-        userPreferences.genres.set(
-            genre,
-            (userPreferences.genres.get(genre) || 0) + weight
+    if (movie.genre) {
+        for (const genre of movie.genre)
+        {
+            userPreferences.genres.set(
+                genre,
+                (userPreferences.genres.get(genre) || 0) + weight
+            );
+        }
+    }
+
+    if (movie.cast) {
+        for (const actor of movie.cast)
+        {
+            userPreferences.actors.set(
+                actor,
+                (userPreferences.actors.get(actor) || 0) + weight
+            );
+        }
+    }
+
+    if (movie.director) {
+        userPreferences.directors.set(
+            movie.director,
+            (userPreferences.directors.get(movie.director) || 0) + weight
         );
     }
 
-    for (const actor of movie.actors)
-    {
-        userPreferences.actors.set(
-            actor,
-            (userPreferences.actors.get(actor) || 0) + weight
-        );
-    }
-
-    graph.directors.set(
-        movie.director,
-        (userPreferences.directors.get(movie.director) || 0) + weight
-    );
-
-    await graph.save();
+    await userPreferences.save();
 }
 

@@ -1,15 +1,19 @@
 
 const userActivityServices = require("../services/userActivityServices");
 
-function updateWatchHistory(req, res, next)
+async function updateWatchHistory(req, res, next)
 {
-    if(req.params.movie && req.params.movie.trim())
+    if (req.params.movie && req.params.movie.trim())
     {
         try
         {   
             const movie = await userActivityServices.getMovieByName(req.params.movie);
+            if (!movie) {
+                return res.status(404).json({ error: "Movie not found" });
+            }
             await userActivityServices.updateWatchHistory(req.params.userid, movie);
             await userActivityServices.updateWatchList(req.params.userid, movie);
+            return res.json({ message: "Watch history updated successfully" });
         }
         catch(err)
         {

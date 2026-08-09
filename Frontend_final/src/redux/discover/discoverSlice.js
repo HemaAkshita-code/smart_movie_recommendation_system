@@ -1,8 +1,10 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import api from "../../lib/axios";
 
 const MOCK_DB = [
   {
     id: 1,
+    _id: "mock_1",
     title: "Arrival",
     releaseYear: 2016,
     duration: "1h 56m",
@@ -21,6 +23,7 @@ const MOCK_DB = [
   },
   {
     id: 2,
+    _id: "mock_2",
     title: "In the Mood for Love",
     releaseYear: 2000,
     duration: "1h 38m",
@@ -39,6 +42,7 @@ const MOCK_DB = [
   },
   {
     id: 3,
+    _id: "mock_3",
     title: "Blade Runner 2049",
     releaseYear: 2017,
     duration: "2h 44m",
@@ -57,6 +61,7 @@ const MOCK_DB = [
   },
   {
     id: 4,
+    _id: "mock_4",
     title: "Portrait of a Lady on Fire",
     releaseYear: 2019,
     duration: "2h 2m",
@@ -75,6 +80,7 @@ const MOCK_DB = [
   },
   {
     id: 5,
+    _id: "mock_5",
     title: "Interstellar",
     releaseYear: 2014,
     duration: "2h 49m",
@@ -93,6 +99,7 @@ const MOCK_DB = [
   },
   {
     id: 6,
+    _id: "mock_6",
     title: "Her",
     releaseYear: 2013,
     duration: "2h 6m",
@@ -111,6 +118,7 @@ const MOCK_DB = [
   },
   {
     id: 7,
+    _id: "mock_7",
     title: "Parasite",
     releaseYear: 2019,
     duration: "2h 12m",
@@ -129,6 +137,7 @@ const MOCK_DB = [
   },
   {
     id: 8,
+    _id: "mock_8",
     title: "Spirited Away",
     releaseYear: 2001,
     duration: "2h 5m",
@@ -146,6 +155,51 @@ const MOCK_DB = [
     aiExplanation: "Matches your taste for magical world-building, gorgeous hand-drawn animation, and nostalgic coming-of-age journeys.",
   },
 ];
+
+export const mapMovieToFrontend = (m) => {
+  if (!m) return null;
+  return {
+    id: m._id,
+    _id: m._id,
+    title: m.title,
+    releaseYear: m.releaseYear,
+    duration: typeof m.duration === "number" ? `${Math.floor(m.duration / 60)}h ${m.duration % 60}m` : m.duration,
+    rating: m.avgRating || 0,
+    genres: m.genre || [],
+    cast: m.cast || [],
+    director: m.director || "Unknown",
+    posterPath: m.coverImage || null,
+    synopsis: m.description || "",
+    moods: m.moods || ["Mind-Bending", "Intense", "Hopeful"],
+    platforms: m.platforms || ["Netflix", "Prime Video"],
+    matchScore: m.matchScore || Math.floor(Math.random() * 15) + 85,
+    aiExplanation: m.aiExplanation || `Matches your affinity for ${m.genre ? m.genre.join(" and ") : "fine cinema"}.`,
+  };
+};
+
+export const fetchMovies = createAsyncThunk(
+  "discover/fetchMovies",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await api.get("/movies");
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.error || "Failed to fetch movies");
+    }
+  }
+);
+
+export const searchMovies = createAsyncThunk(
+  "discover/searchMovies",
+  async (query, { rejectWithValue }) => {
+    try {
+      const res = await api.get(`/movies/search?query=${encodeURIComponent(query)}`);
+      return res.data.movie;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.error || "Search failed");
+    }
+  }
+);
 
 const initialState = {
   movies: MOCK_DB,
@@ -210,6 +264,24 @@ const discoverSlice = createSlice({
     closeDrawer: (state) => {
       state.selectedMovieForDrawer = null;
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchMovies.fulfilled, (state, action) => {
+        if (action.payload && action.payload.length > 0) {
+          state.movies = action.payload.map(mapMovieToFrontend);
+        }
+      })
+      .addCase(searchMovies.fulfilled, (state, action) => {
+        if (action.payload) {
+          const mapped = mapMovieToFrontend(action.payload);
+          const exists = state.movies.some((m) => m.id === mapped.id || m._id === mapped._id);
+          if (!exists) {
+            state.movies.unshift(mapped);
+          }
+          state.selectedMovieForDrawer = mapped;
+        }
+      });
   },
 });
 

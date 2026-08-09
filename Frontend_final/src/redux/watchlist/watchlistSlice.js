@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import api from "../../api";
+import api from "../../lib/axios";
 
 const MOCK_ITEMS = [
   {
@@ -56,7 +56,10 @@ export const fetchWatchlist = createAsyncThunk(
   async (userId, { rejectWithValue }) => {
     try {
       const res = await api.get(`/watchlist/user/${userId}`);
-      return res.data;
+      return res.data.map(item => ({
+        ...item,
+        status: item.status ? item.status.toLowerCase() : "want to watch"
+      }));
     } catch (err) {
       return rejectWithValue(err.response?.data?.error || "Failed to load watchlist");
     }
@@ -67,12 +70,16 @@ export const addToWatchlist = createAsyncThunk(
   "watchlist/addToWatchlist",
   async ({ userId, movieId, status }, { rejectWithValue }) => {
     try {
+      const backendStatus = status === "completed" ? "Completed" : status === "watching" ? "Watching" : "Want to Watch";
       const res = await api.post("/watchlist", {
         user: userId,
         movie: movieId,
-        status,
+        status: backendStatus,
       });
-      return res.data;
+      return {
+        ...res.data,
+        status: res.data.status ? res.data.status.toLowerCase() : "want to watch"
+      };
     } catch (err) {
       return rejectWithValue(err.response?.data?.error || "Failed to add");
     }
@@ -83,8 +90,12 @@ export const updateWatchlistStatus = createAsyncThunk(
   "watchlist/updateStatus",
   async ({ entryId, status }, { rejectWithValue }) => {
     try {
-      const res = await api.put(`/watchlist/${entryId}`, { status });
-      return res.data;
+      const backendStatus = status === "completed" ? "Completed" : status === "watching" ? "Watching" : "Want to Watch";
+      const res = await api.put(`/watchlist/${entryId}`, { status: backendStatus });
+      return {
+        ...res.data,
+        status: res.data.status ? res.data.status.toLowerCase() : "want to watch"
+      };
     } catch (err) {
       return rejectWithValue(err.response?.data?.error || "Failed to update");
     }
@@ -158,8 +169,6 @@ const watchlistSlice = createSlice({
         state.items = state.items.filter((i) => i._id !== action.payload);
       });
   }
-
-  },
 });
 
 export const {

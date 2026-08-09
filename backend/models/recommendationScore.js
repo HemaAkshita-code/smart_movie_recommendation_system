@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 const recommendationScoreSchema = mongoose.Schema({
-    user: ObjectId,
-    movie: ObjectId,
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'UserLogin' },
+    movie: { type: mongoose.Schema.Types.ObjectId, ref: 'Movie' },
 
     scores: {
         genre: Number,

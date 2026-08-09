@@ -20,17 +20,22 @@ import Friends from "../pages/Friends/Friends";
 import ComponentShowcase from "../pages/ComponentShowcase/ComponentShowcase";
 import NotFound from "../pages/NotFound/NotFound";
 
+import ProtectedRoute from "./ProtectedRoute";
+import PublicRoute from "./PublicRoute";
+
 const AppRoutes = () => {
   return (
     <Routes>
       {/* Public Routes */}
       <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/onboarding" element={<Onboarding />} />
+      
+      {/* Public Only Auth Pages (Redirect to dashboard if logged in) */}
+      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+      <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+      <Route path="/onboarding" element={<PublicRoute><Onboarding /></PublicRoute>} />
 
       {/* Authenticated Dashboard Shell Routes */}
-      <Route element={<DashboardLayout />}>
+      <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/home" element={<Dashboard />} />
         <Route path="/discover" element={<Discover />} />
@@ -73,3 +78,4 @@ const AppRoutes = () => {
 };
 
 export default AppRoutes;
+export { AppRoutes };

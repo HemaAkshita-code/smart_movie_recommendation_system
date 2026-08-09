@@ -44,7 +44,7 @@ const TopNavbar = () => {
         <div className="h-5 w-[1px] bg-border/20" />
 
         {/* User avatar menu */}
-        <UserMenu userName="Ria" />
+        <UserMenu />
       </div>
 
     </header>
