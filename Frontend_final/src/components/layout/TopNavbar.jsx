@@ -19,7 +19,7 @@ const TopNavbar = () => {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-background/80 border-b border-border/10 h-16 flex items-center justify-between px-6">
+    <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-background/80 border-b border-border/10 h-20 px-8 flex items-center justify-between">
       
       {/* Search form bar */}
       <form onSubmit={handleSearchSubmit} className="w-full max-w-xs relative font-sans">
