@@ -5,7 +5,7 @@ const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 
-const secret = process.env.JWT_SECRET ;
+const secret = "Hulallallallaleo-Hulallallallaleo";
 
 // Create a nodemailer transporter
 const transporter = nodemailer.createTransport({
