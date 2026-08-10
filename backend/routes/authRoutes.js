@@ -19,8 +19,4 @@ router.post("/reset-password", authControllers.resetPassword);
 
 router.get('/search/:username', authControllers.findUsers);
 
-router.get('/me', authControllers.verifyToken, authControllers.getMe);
-
-router.post('/logout', authControllers.logout);
-
 module.exports = router;

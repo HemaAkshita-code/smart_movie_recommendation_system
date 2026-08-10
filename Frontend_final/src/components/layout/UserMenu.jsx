@@ -1,18 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import { User, Settings, LogOut, ChevronDown } from "lucide-react";
 import Avatar from "../ui/avatar";
-import { logoutUser } from "../../redux/auth/authSlice";
 
-const UserMenu = () => {
+const UserMenu = ({ userName = "Ria" }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const currentUser = useSelector((state) => state.auth.user);
-
-  const userName = currentUser?.name || "Guest";
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -24,9 +18,9 @@ const UserMenu = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     setIsOpen(false);
-    await dispatch(logoutUser());
+    // Future auth logout dispatch
     navigate("/");
   };
 

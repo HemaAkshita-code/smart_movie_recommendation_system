@@ -1,7 +1,7 @@
 
 const llmService = require('./llmServices');
 const UserTasteGraph = require('../models/userTastegraph');
-const MovieFeatureGraph = require('../models/movieFeature');
+const MovieFeatureGraph = require('../models/movieFeatureModel');
 const preprocess = require('./preprocessServices');
 const RecommendationScore = require('../models/recommendationScore');
 

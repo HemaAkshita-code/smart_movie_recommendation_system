@@ -1,39 +1,4 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import api from "../../lib/axios";
-
-export const fetchProfile = createAsyncThunk(
-  "profile/fetchProfile",
-  async (userId, { rejectWithValue }) => {
-    try {
-      const [profileRes, tasteRes] = await Promise.allSettled([
-        api.get(`/profile/${userId}`),
-        api.get(`/taste/${userId}`)
-      ]);
-
-      const profileData = profileRes.status === "fulfilled" ? profileRes.value.data : {};
-      const tasteData = tasteRes.status === "fulfilled" ? tasteRes.value.data : null;
-
-      return {
-        profileData,
-        tasteData
-      };
-    } catch (err) {
-      return rejectWithValue("Failed to fetch profile");
-    }
-  }
-);
-
-export const saveProfileName = createAsyncThunk(
-  "profile/saveProfileName",
-  async ({ userId, name }, { rejectWithValue }) => {
-    try {
-      const res = await api.put(`/profile/${userId}`, { name });
-      return res.data;
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.error || "Failed to update profile name");
-    }
-  }
-);
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   profile: {
@@ -97,33 +62,6 @@ const profileSlice = createSlice({
     removeFriend: (state, action) => {
       state.friends = state.friends.filter((f) => f.id !== action.payload);
     },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(fetchProfile.fulfilled, (state, action) => {
-        const { profileData, tasteData } = action.payload;
-        if (profileData) {
-          state.profile.name = profileData.name || state.profile.name;
-          state.profile.username = profileData.username || state.profile.username;
-          state.profile.joinDate = profileData.created_at ? `Joined ${new Date(profileData.created_at).toLocaleDateString()}` : state.profile.joinDate;
-        }
-        if (tasteData) {
-          if (tasteData.favoriteGenres && tasteData.favoriteGenres.length > 0) {
-            state.profile.favorites.genres = tasteData.favoriteGenres.map(g => g.genre);
-          }
-          if (tasteData.favoriteActors && tasteData.favoriteActors.length > 0) {
-            state.profile.favorites.actors = tasteData.favoriteActors.map(a => a.actor);
-          }
-          if (tasteData.favoriteDirectors && tasteData.favoriteDirectors.length > 0) {
-            state.profile.favorites.directors = tasteData.favoriteDirectors.map(d => d.director);
-          }
-        }
-      })
-      .addCase(saveProfileName.fulfilled, (state, action) => {
-        if (action.payload) {
-          state.profile.name = action.payload.name || state.profile.name;
-        }
-      });
   },
 });
 

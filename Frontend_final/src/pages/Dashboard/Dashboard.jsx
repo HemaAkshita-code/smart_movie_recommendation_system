@@ -14,11 +14,9 @@ import CompatibilityWidget from "../../components/dashboard/CompatibilityWidget"
 import RecentActivity from "../../components/dashboard/RecentActivity";
 
 const Dashboard = () => {
-  const dashboardState = useSelector((state) => state.dashboard);
-  const currentUser = useSelector((state) => state.auth.user);
-
-  const { movieOfTheDay, continueWatching, compatibilitySnapshot, recentActivity } = dashboardState;
-  const userName = currentUser?.name || dashboardState.user.name;
+  const { user, movieOfTheDay, continueWatching, compatibilitySnapshot, recentActivity } = useSelector(
+    (state) => state.dashboard
+  );
 
   const containerVariants = {
     hidden: {},
@@ -43,7 +41,7 @@ const Dashboard = () => {
     >
       {/* 1. Welcome Header */}
       <motion.div variants={itemVariants}>
-        <DashboardHeader userName={userName} recommendationCount={currentUser?.recommendationCount || dashboardState.user.recommendationCount} />
+        <DashboardHeader userName={user.name} recommendationCount={user.recommendationCount} />
       </motion.div>
 
       {/* Grid: Left Column (Main Feed) & Right Column (Meta summaries) */}

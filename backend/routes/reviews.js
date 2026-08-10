@@ -23,14 +23,9 @@ router.post('/', async function(req, res) {
 
     const review = await Review.create(req.body);
     try {
-      const analysis = await llmService.reviewAnalyser(reviewText);
-      const userTasteGraph = await userTasteGraphModel.findOne({ user: user });
-      if (userTasteGraph) {
-        userTasteGraph.reviewAnalysis = analysis;
-        await userTasteGraph.save();
-      } else {
-        await userTasteGraphModel.create({ user: user, reviewAnalysis: analysis });
-      }
+      const analysis = await llmService.reviewAnalyser(req.body.review);
+      userTasteGraphModel.reviewAnalysis = analysis;
+      await userTasteGraphModel.save();
 
       await Notification.create({
         user: user,

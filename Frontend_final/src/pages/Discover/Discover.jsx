@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -23,16 +23,11 @@ import {
   setSearchQuery,
   openDrawer,
   closeDrawer,
-  fetchMovies,
-  searchMovies,
 } from "../../redux/discover/discoverSlice";
-
-import { addToWatchlist } from "../../redux/watchlist/watchlistSlice";
 
 const Discover = () => {
   const dispatch = useDispatch();
   const discoverState = useSelector((state) => state.discover);
-  const currentUser = useSelector((state) => state.auth.user);
 
   const {
     movies,
@@ -47,11 +42,6 @@ const Discover = () => {
   const [sortBy, setSortBy] = useState("match");
   const [isGridView, setIsGridView] = useState(true);
 
-  // Fetch real movies on mount
-  useEffect(() => {
-    dispatch(fetchMovies());
-  }, [dispatch]);
-
   // Client-Side Film Filtering Logic
   const getFilteredMovies = () => {
     return movies.filter((movie) => {
@@ -59,8 +49,8 @@ const Discover = () => {
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesTitle = movie.title.toLowerCase().includes(q);
-        const matchesSynopsis = (movie.synopsis || "").toLowerCase().includes(q);
-        const matchesDirector = (movie.director || "").toLowerCase().includes(q);
+        const matchesSynopsis = movie.synopsis.toLowerCase().includes(q);
+        const matchesDirector = movie.director.toLowerCase().includes(q);
         if (!matchesTitle && !matchesSynopsis && !matchesDirector) return false;
       }
 
@@ -113,23 +103,9 @@ const Discover = () => {
 
   const handlePromptSelect = (prompt) => {
     dispatch(setSearchQuery(prompt));
-    if (prompt.trim()) {
-      dispatch(searchMovies(prompt));
-    }
   };
 
   const handleAddToWatchlist = (movie) => {
-    if (!currentUser) {
-      alert("Please sign in to save movies.");
-      return;
-    }
-    dispatch(
-      addToWatchlist({
-        userId: currentUser._id,
-        movieId: movie._id || movie.id,
-        status: "want to watch",
-      })
-    );
     alert(`"${movie.title}" has been bookmarked to your watchlist.`);
   };
 
@@ -146,12 +122,7 @@ const Discover = () => {
         <AISearchBar
           value={searchQuery}
           onChange={(val) => dispatch(setSearchQuery(val))}
-          onSubmit={(val) => {
-            dispatch(setSearchQuery(val));
-            if (val.trim()) {
-              dispatch(searchMovies(val));
-            }
-          }}
+          onSubmit={(val) => dispatch(setSearchQuery(val))}
         />
 
         <PromptSuggestions onSelect={handlePromptSelect} />
@@ -196,7 +167,7 @@ const Discover = () => {
               <div className="divide-y divide-border/10">
                 {sortedMovies.map((m) => (
                   <div
-                    key={m._id || m.id}
+                    key={m.id}
                     onClick={() => dispatch(openDrawer(m))}
                     className="flex items-center justify-between py-4 hover:bg-muted/30 px-4 rounded-btn cursor-pointer transition-colors"
                   >

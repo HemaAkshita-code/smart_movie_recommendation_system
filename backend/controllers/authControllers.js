@@ -8,10 +8,7 @@ const secret = "Hulallallallaleo-Hulallallallaleo";
 
 function verifyToken(req, res, next) {
 
-    let token = req.cookies.token;
-    if (!token && req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
-        token = req.headers.authorization.split(" ")[1];
-    }
+    const token = req.cookies.token;
 
     if (!token)
         return res.status(401).json({
@@ -145,16 +142,10 @@ async function verifyOtp(req, res, next)
 
 async function signIn(req, res, next) 
 {
-  let user;
-  if (req.body.username) {
-    user = await authServices.findUser('username', req.body.username);
-  } else if (req.body.email) {
-    user = await authServices.findUser('email', req.body.email.toLowerCase());
-  }
-
+  const user = await authServices.findUser('username', req.body.username );
   if (!user) 
   {
-    return res.status(400).json({ error: 'Invalid username/email or password' });
+    return res.status(400).json({ error: 'Invalid username or password' });
   }
 
   if (!user.isVerified)
@@ -167,7 +158,7 @@ async function signIn(req, res, next)
     const isMatch = await authServices.login(user, req.body.password);
     if (!isMatch) 
     {
-      return res.status(400).json({ error: 'Invalid username/email or password' });
+      return res.status(400).json({ error: 'Invalid username or password' });
     }
 
     const token = await authServices.createToken(user);
@@ -179,16 +170,8 @@ async function signIn(req, res, next)
         maxAge: 30 * 24 * 60 * 60 * 1000
     });
 
-    res.json({
-      message: 'Sign in successful',
-      token,
-      user: {
-        _id: user._id,
-        username: user.username,
-        name: user.name,
-        email: user.email
-      }
-    });
+
+    res.json({ message: 'Sign in successful' });
   }
   catch(err)
   {
@@ -273,25 +256,6 @@ async function resetPassword(req, res)
 
 }
 
-async function getMe(req, res) {
-  try {
-    const user = await userLoginModel.findById(req.user.id).select('-password -otp -otp_expiration');
-    if (!user) return res.status(404).json({ error: "User not found" });
-    res.json({ user });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
-
-function logout(req, res) {
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: false,
-    sameSite: "lax"
-  });
-  res.json({ message: "Logout successful" });
-}
-
 module.exports = {
     register,
     sendOtp,
@@ -301,7 +265,5 @@ module.exports = {
     verifyResetOtp,
     resetPassword,
     findUsers,
-    verifyToken,
-    getMe,
-    logout
+    verifyToken
 };

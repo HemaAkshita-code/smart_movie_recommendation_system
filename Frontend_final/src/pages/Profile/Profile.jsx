@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import ProfileHeader from "../../components/profile/ProfileHeader";
 import AchievementsSection from "../../components/profile/AchievementsSection";
@@ -8,42 +8,19 @@ import Button from "../../components/ui/button";
 import Card, { CardContent } from "../../components/ui/card";
 import Input from "../../components/ui/input";
 
-import { updateProfile, fetchProfile, saveProfileName } from "../../redux/profile/profileSlice";
+import { updateProfile } from "../../redux/profile/profileSlice";
 
 const Profile = () => {
   const dispatch = useDispatch();
   const { profile, achievements } = useSelector((state) => state.profile);
-  const currentUser = useSelector((state) => state.auth.user);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(profile.name);
   const [editedBio, setEditedBio] = useState(profile.bio);
 
-  // Fetch profile and taste data on load
-  useEffect(() => {
-    if (currentUser?._id) {
-      dispatch(fetchProfile(currentUser._id));
-    }
-  }, [dispatch, currentUser?._id]);
-
-  // Sync state if profile changes
-  useEffect(() => {
-    if (profile.name) {
-      setEditedName(profile.name);
-    }
-    if (profile.bio) {
-      setEditedBio(profile.bio);
-    }
-  }, [profile.name, profile.bio]);
-
   const handleSaveProfile = (e) => {
     e.preventDefault();
-    if (currentUser?._id) {
-      dispatch(saveProfileName({ userId: currentUser._id, name: editedName.trim() }));
-      dispatch(updateProfile({ bio: editedBio.trim() })); // bio is kept in state since not in DB
-    } else {
-      dispatch(updateProfile({ name: editedName.trim(), bio: editedBio.trim() }));
-    }
+    dispatch(updateProfile({ name: editedName.trim(), bio: editedBio.trim() }));
     setIsEditing(false);
   };
 

@@ -2,7 +2,6 @@ require('dotenv').config();
 var profileRouter = require('./routes/profile');
 var createError = require('http-errors');
 var express = require('express');
-var cors = require('cors');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
@@ -20,11 +19,6 @@ var tasteProfileRouter = require('./routes/tasteProfile');
 
 var app = express();
 
-app.use(cors({
-  origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
-  credentials: true
-}));
-
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -40,7 +34,6 @@ app.use('/api/watchlist', watchlistRouter);
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use("/auth", authRoutes);
-app.use("/api/auth", authRoutes);
 app.use('/api/movies', moviesRouter);
 app.use('/api/notifications', notificationsRouter);
 app.use('/api/taste', tasteProfileRouter);
